@@ -49,7 +49,7 @@ for e in range(config.epochs):
     g_error = 0
 
     # Decrease the learning rate after 3 iterations
-    if e == -3:
+    if e == 5:
         for param in d_optimizer.param_groups:
             param['lr'] = config.learning_rate / 10
         for param in g_optimizer.param_groups:

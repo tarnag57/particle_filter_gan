@@ -74,6 +74,7 @@ class GeneratorModel(nn.Module):
         )
         self.fc = nn.Linear(self.hidden_size, self.output_size)
         self.softmax = nn.Softmax(dim=2)
+        self.relu = nn.ReLU
 
     '''
     Generates a name using a fully-connected layer and Softmax on the
@@ -95,6 +96,10 @@ class GeneratorModel(nn.Module):
 
             # state == (hidden, channel)
             probs = self.softmax(self.fc(output))
+
+            # Bizarely, Softmax (very) rarely returns negative values
+            # which we should consider to be 0
+            probs = self.relu(probs)
 
             # Sample from the distribution
             distr = Categorical(probs)
@@ -125,7 +130,7 @@ class GeneratorModel(nn.Module):
             .type(utils.float_type).repeat([batch_size, 1])[None, :]
         output, state = self.lstm(starting_char)
 
-        total_log_lik = torch.zeros(batch_size)
+        total_log_lik = torch.zeros(batch_size).to(config.device)
 
         for layer in x:
             probs = self.softmax(self.fc(output)).transpose(0, 1)
