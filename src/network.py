@@ -74,7 +74,6 @@ class GeneratorModel(nn.Module):
         )
         self.fc = nn.Linear(self.hidden_size, self.output_size)
         self.softmax = nn.Softmax(dim=2)
-        self.relu = nn.ReLU
 
     '''
     Generates a name using a fully-connected layer and Softmax on the
@@ -91,19 +90,23 @@ class GeneratorModel(nn.Module):
             '.').to(config.device).type(utils.float_type).repeat([samples, 1])[None, :]
         output, state = self.lstm(starting_char)
         gen_name_tensors = []
+        next_input = None
 
         for _ in range(config.max_len):
 
             # state == (hidden, channel)
             probs = self.softmax(self.fc(output))
 
-            # Bizarely, Softmax (very) rarely returns negative values
-            # which we should consider to be 0
-            probs = self.relu(probs)
-
             # Sample from the distribution
             distr = Categorical(probs)
-            categories = distr.sample()
+            try:
+                categories = distr.sample()
+            except:
+                print("Sampling crashed")
+                print(f"Probs: {probs}")
+                print(f"Output: {output}")
+                print(f"Next_input: {next_input}")
+                raise Exception("BOOM!")
 
             next_input = F.one_hot(
                 categories.type(utils.long_type),
