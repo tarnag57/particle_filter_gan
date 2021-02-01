@@ -101,20 +101,41 @@ def run():
         generated = utils.tensor_to_word(generator(samples=10))
         # print(f"Samples: {generated}")
 
-    return d_errors, g_errors
+    return d_errors, g_errors, discriminator, generator
 
 
-all_d_errors = []
-all_g_errors = []
-for it in range(config.runs):
-    d_errors, g_errors = run()
-    print("=====================")
-    print(f"Finished with run {it}")
-    print("=====================")
-    all_d_errors.append(d_errors)
-    all_g_errors.append(g_errors)
+# discriminator = DiscriminatorModel().to(config.device)
+# generator = GeneratorModel().to(config.device)
+# network_test(discriminator, generator)
 
-d_df = pd.DataFrame(np.array(all_d_errors))
-g_df = pd.DataFrame(np.array(all_g_errors))
-d_df.to_csv(config.log_folder + 'discriminator.csv')
-g_df.to_csv(config.log_folder + 'generator.csv')
+# all_d_errors = []
+# all_g_errors = []
+# for it in range(config.runs):
+#     d_errors, g_errors, _, _ = run()
+#     print("=====================")
+#     print(f"Finished with run {it}")
+#     print("=====================")
+#     all_d_errors.append(d_errors)
+#     all_g_errors.append(g_errors)
+
+# d_df = pd.DataFrame(np.array(all_d_errors))
+# g_df = pd.DataFrame(np.array(all_g_errors))
+# d_df.to_csv(config.log_folder + 'discriminator.csv')
+# g_df.to_csv(config.log_folder + 'generator.csv')
+
+
+def _write_samples(samples, file):
+    f = open(file, 'w')
+    for sample in samples:
+        f.write(sample + '\n')
+    f.close()
+
+
+_, _, _, generator = run()
+short_samples = utils.tensor_to_word(
+    generator(samples=200, end_char_modifier=1.0))
+long_samples = utils.tensor_to_word(
+    generator(samples=200, end_char_modifier=0.0))
+
+_write_samples(short_samples, config.log_folder + 'short_samples.txt')
+_write_samples(long_samples, config.log_folder + 'long_samples.txt')

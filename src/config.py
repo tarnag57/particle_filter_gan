@@ -8,7 +8,7 @@ class Config():
         self.epochs = 200
         self.learning_rate = 0.02
         self.log_folder = '../out/'
-        self.runs = 30
+        self.runs = 1
 
 
 config = Config()

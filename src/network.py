@@ -84,7 +84,7 @@ class GeneratorModel(nn.Module):
     :return char[]: The generated name as an array of characters.
     '''
 
-    def forward(self, samples):
+    def forward(self, samples, end_char_modifier=1.0):
 
         starting_char = utils.word_to_tensor(
             '.').to(config.device).type(utils.float_type).repeat([samples, 1])[None, :]
@@ -96,6 +96,14 @@ class GeneratorModel(nn.Module):
 
             # state == (hidden, channel)
             probs = self.softmax(self.fc(output))
+
+            # Constructing end char modifier
+            modifier = torch.ones(len(utils.letters))
+            modifier[-1] = end_char_modifier
+            modifier = modifier.repeat([samples, 1])[None, :]
+
+            # Applying end char modifier
+            probs *= modifier
 
             # Sample from the distribution
             distr = Categorical(probs)
